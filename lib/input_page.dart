@@ -8,9 +8,10 @@ class InputPage extends StatefulWidget {
       required this.title,
       required this.id,
       required this.name,
-      required this.email});
+      required this.email,
+      this.phone});
 
-  final String? title, name, email, id;
+  final String? title, name, email, id, phone;
 
   @override
   State<InputPage> createState() => _InputPageState();
@@ -19,12 +20,14 @@ class InputPage extends StatefulWidget {
 class _InputPageState extends State<InputPage> {
   TextEditingController controllerName = TextEditingController();
   TextEditingController controllerEmail = TextEditingController();
+  TextEditingController controllerPhone = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     if (widget.id != null) {
       controllerName.text = widget.name!;
       controllerEmail.text = widget.email!;
+      controllerPhone.text = widget.phone ?? '';
     }
     return Scaffold(
       appBar: AppBar(
@@ -48,6 +51,14 @@ class _InputPageState extends State<InputPage> {
               labelText: 'Email',
             ),
           ),
+          SizedBox(height: 24),
+          TextField(
+            controller: controllerPhone,
+            decoration: const InputDecoration(
+              border: UnderlineInputBorder(),
+              labelText: 'Phone (opsional)',
+            ),
+          ),
           SizedBox(height: 48),
           ElevatedButton(
             child: Text('Save'),
@@ -55,7 +66,10 @@ class _InputPageState extends State<InputPage> {
               if (widget.id == null) {
                 createEmployee(
                     name: controllerName.text,
-                    email: controllerEmail.text);
+                    email: controllerEmail.text,
+                    phone: controllerPhone.text.isEmpty
+                        ? null
+                        : controllerPhone.text);
               } else {
                 final docEmployee = FirebaseFirestore.instance
                     .collection('employee')
@@ -64,6 +78,9 @@ class _InputPageState extends State<InputPage> {
                 docEmployee.update({
                   'name': controllerName.text,
                   'email': controllerEmail.text,
+                  'phone': controllerPhone.text.isEmpty
+                      ? null
+                      : controllerPhone.text,
                 });
               }
 
@@ -76,12 +93,18 @@ class _InputPageState extends State<InputPage> {
   }
 
   Future createEmployee(
-      {required String name, required String email}) async {
+      {required String name,
+      required String email,
+      required String? phone}) async {
     final docEmployee =
         FirebaseFirestore.instance.collection('employee').doc();
 
-    final employee =
-        Employee(id: docEmployee.id, name: name, email: email);
+    final employee = Employee(
+        id: docEmployee.id,
+        name: name,
+        email: email,
+        phone: phone,
+        isDeleted: false);
     final json = employee.toJson();
 
     await docEmployee.set(json);

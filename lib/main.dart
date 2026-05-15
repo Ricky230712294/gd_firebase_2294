@@ -63,6 +63,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     name: null,
                     email: null,
                     id: null,
+                    phone: null,
                   ),
                 ),
               );
@@ -129,6 +130,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       name: employee.name,
                       email: employee.email,
                       id: employee.id,
+                      phone: employee.phone,
                     ),
                   ),
                 );
@@ -147,7 +149,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 final docEmployee =
                     db.collection('employee').doc(employee.id);
 
-                docEmployee.delete();
+                docEmployee.update({'isDeleted': true});
               },
               label: 'Delete',
               icon: Icons.delete,
@@ -163,6 +165,7 @@ class _MyHomePageState extends State<MyHomePage> {
       .map(
         (snapshot) => snapshot.docs
             .map((doc) => Employee.fromJson(doc.data()))
+            .where((employee) => !employee.isDeleted)
             .toList(),
       );
 }
